@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time
 import requests
+import os
+import wget
 
 hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -108,11 +110,27 @@ class DataCollection:
             if i % save_every == 0:
                 book_data.to_csv(DataCollection.books_detail)
 
+    @staticmethod
+    def download_book_cover_image():
+        img_dir = 'images/'
+        list_files = os.listdir(img_dir)
+        start = 0
+        if len(list_files) > 0:
+            start = max([int(f[-4]) for f in list_files]) + 1
+
+        books_detail = pd.read_csv(DataCollection.books_detail)
+        for i in range(start, len(DataCollection.books_detail)):
+            img_url = books_detail.loc[i, 'image_url']
+            if not pd.isna(img_url):
+                wget.download(img_url, (img_dir + '{}.jpg').format(i))
+
 if __name__ == "__main__":
     # 1. Collect books url
     # DataCollection.collect_books_url(num_pages=3)
 
     # 2. Collect book data
-    DataCollection.collect_book_data()
+    # DataCollection.collect_book_data()
 
+    # 3. Download book cover image
+    DataCollection.download_book_cover_image()
 
